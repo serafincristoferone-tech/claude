@@ -1,0 +1,344 @@
+<title>Ahorro diario a 10 años</title>
+<meta name="description" content="Simulación de invertir 200.000 pesos todos los días al 10% anual durante 10 años.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una columna de lectura (máx. 960px): encabezado + controles, tres cifras, gráfico, tabla anual. */
+:root {
+  --bg: #fcfcfb;
+  --surface: #ffffff;
+  --fg: #0b0b0b;
+  --fg-2: #52514e;
+  --fg-3: #7a7974;
+  --line: #e4e3df;
+  --grid: #ecebe7;
+  --series-1: #2a78d6;   /* valor del portafolio */
+  --series-1-fill: rgba(42, 120, 214, 0.12);
+  --series-2: #eb6834;   /* total aportado */
+  --focus: #2a78d6;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1a19; --surface: #222221; --fg: #f0efec; --fg-2: #c3c2b7; --fg-3: #94938b;
+    --line: #34332f; --grid: #2b2a27;
+    --series-1: #3987e5; --series-1-fill: rgba(57, 135, 229, 0.18); --series-2: #d95926; --focus: #3987e5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1a19; --surface: #222221; --fg: #f0efec; --fg-2: #c3c2b7; --fg-3: #94938b;
+  --line: #34332f; --grid: #2b2a27;
+  --series-1: #3987e5; --series-1-fill: rgba(57, 135, 229, 0.18); --series-2: #d95926; --focus: #3987e5;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 960px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 56px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+.wrap > * { min-width: 0; }
+
+header { display: grid; gap: 8px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(26px, 4.4vw, 38px); line-height: 1.1; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+.lede { margin: 0; color: var(--fg-2); max-width: 65ch; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label { font-size: 12px; color: var(--fg-2); font-weight: 600; letter-spacing: 0.02em; }
+.field input {
+  font: 500 15px/1.2 var(--font-data); color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; width: 9.5em; max-width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+.field input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.field.small input { width: 6em; }
+
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.stat { padding: 16px 16px 16px 0; display: grid; gap: 2px; min-width: 0; }
+.stat + .stat { padding-left: 16px; border-left: 1px solid var(--line); }
+.stat .k { font-size: 12px; color: var(--fg-2); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.stat .v { font-family: var(--font-display); font-weight: 700; font-size: clamp(20px, 3.4vw, 30px); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.stat .s { font-size: 12.5px; color: var(--fg-3); }
+.swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.swatch.line { height: 2px; border-radius: 1px; width: 14px; }
+
+.chart-card { display: grid; gap: 10px; }
+.chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; align-items: baseline; }
+.chart-head h2 { font-family: var(--font-display); font-weight: 700; font-size: 18px; margin: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--fg-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--font-data); font-size: 11px; fill: var(--fg-3); }
+.chart .lbl { font-family: var(--font-body); font-size: 12px; font-weight: 600; fill: var(--fg); }
+.tip {
+  position: absolute; pointer-events: none; background: var(--surface); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12); min-width: 210px; display: grid; gap: 4px;
+}
+.tip .t { font-weight: 600; margin-bottom: 2px; }
+.tip .row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.tip .row > span:first-child { display: inline-flex; align-items: center; gap: 6px; color: var(--fg-2); }
+.tip .num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.note { font-size: 12.5px; color: var(--fg-3); margin: 0; max-width: 75ch; }
+
+details { border-top: 1px solid var(--line); padding-top: 14px; }
+summary { cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+.table-scroll { overflow-x: auto; margin-top: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 520px; }
+th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12px; color: var(--fg-2); font-weight: 600; }
+td { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 620px) {
+  .stats { grid-template-columns: minmax(0, 1fr); }
+  .stat, .stat + .stat { padding: 12px 0; border-left: 0; }
+  .stat + .stat { border-top: 1px solid var(--line); }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Interés compuesto · aporte diario</div>
+    <h1 id="headline">Invertir $200.000 por día al 10% anual durante 10 años</h1>
+    <p class="lede">Cada día se suma un aporte fijo y el saldo crece con una tasa efectiva anual, capitalizada a diario. La distancia entre las dos curvas es el interés acumulado.</p>
+  </header>
+
+  <form class="controls" id="params" autocomplete="off">
+    <div class="field">
+      <label for="aporte">Aporte diario ($)</label>
+      <input id="aporte" type="number" inputmode="numeric" min="0" step="1000" value="200000">
+    </div>
+    <div class="field small">
+      <label for="tasa">Tasa anual (%)</label>
+      <input id="tasa" type="number" inputmode="decimal" min="0" max="100" step="0.5" value="10">
+    </div>
+    <div class="field small">
+      <label for="anios">Años</label>
+      <input id="anios" type="number" inputmode="numeric" min="1" max="40" step="1" value="10">
+    </div>
+  </form>
+
+  <section class="stats" aria-label="Resultado al final del período">
+    <div class="stat">
+      <div class="k"><span class="swatch line" style="background: var(--series-2)"></span>Total aportado</div>
+      <div class="v" id="s-aportado">—</div>
+      <div class="s" id="s-aportado-sub">—</div>
+    </div>
+    <div class="stat">
+      <div class="k">Intereses ganados</div>
+      <div class="v" id="s-interes">—</div>
+      <div class="s" id="s-interes-sub">—</div>
+    </div>
+    <div class="stat">
+      <div class="k"><span class="swatch line" style="background: var(--series-1)"></span>Valor final</div>
+      <div class="v" id="s-final">—</div>
+      <div class="s" id="s-final-sub">—</div>
+    </div>
+  </section>
+
+  <section class="chart-card">
+    <div class="chart-head">
+      <h2>Evolución del saldo</h2>
+      <div class="legend" aria-hidden="true">
+        <span><span class="swatch line" style="background: var(--series-1)"></span>Valor del portafolio</span>
+        <span><span class="swatch line" style="background: var(--series-2)"></span>Total aportado</span>
+      </div>
+    </div>
+    <div class="chart" id="chart">
+      <div class="tip" id="tip" hidden></div>
+    </div>
+    <p class="note" id="note"></p>
+  </section>
+
+  <details open>
+    <summary>Detalle año por año</summary>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Año</th><th>Aportado en el año</th><th>Total aportado</th><th>Intereses acumulados</th><th>Valor del portafolio</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </details>
+</div>
+
+<script>
+(function () {
+  const DAYS_PER_YEAR = 365;
+  const nf = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 });
+  const money = v => "$" + nf.format(Math.round(v));
+  const millions = v => {
+    const m = v / 1e6;
+    return "$" + new Intl.NumberFormat("es-CO", { maximumFractionDigits: m < 10 ? 1 : 0 }).format(m) + " M";
+  };
+
+  const $ = id => document.getElementById(id);
+  const chartEl = $("chart"), tip = $("tip");
+  let state = null;
+
+  // Aporte al final de cada día; el saldo previo rinde la tasa diaria equivalente a la efectiva anual.
+  function simulate(aporte, tasaAnual, anios) {
+    const r = Math.pow(1 + tasaAnual, 1 / DAYS_PER_YEAR) - 1;
+    const totalDays = anios * DAYS_PER_YEAR;
+    const months = anios * 12;
+    const points = [{ m: 0, day: 0, aportado: 0, valor: 0 }];
+    const years = [];
+    let saldo = 0, nextMonth = 1;
+    for (let d = 1; d <= totalDays; d++) {
+      saldo = saldo * (1 + r) + aporte;
+      while (nextMonth <= months && d === Math.round(nextMonth * DAYS_PER_YEAR / 12)) {
+        points.push({ m: nextMonth, day: d, aportado: aporte * d, valor: saldo });
+        nextMonth++;
+      }
+      if (d % DAYS_PER_YEAR === 0) years.push({ y: d / DAYS_PER_YEAR, aportado: aporte * d, valor: saldo });
+    }
+    return { r, points, years, aporte, tasaAnual, anios };
+  }
+
+  function niceStep(max, target) {
+    const raw = max / target;
+    const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+    const n = raw / pow;
+    const step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10;
+    return step * pow;
+  }
+
+  const SVGNS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, parent) {
+    const e = document.createElementNS(SVGNS, name);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  function draw() {
+    if (!state) return;
+    tip.hidden = true;
+    const old = chartEl.querySelector("svg");
+    if (old) old.remove();
+    const W = Math.max(320, chartEl.clientWidth || 800);
+    const narrow = W < 560;
+    const H = narrow ? 300 : 380;
+    const m = { top: 14, right: narrow ? 12 : 128, bottom: 30, left: narrow ? 58 : 72 };
+    const iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    const pts = state.points;
+    const maxV = pts[pts.length - 1].valor || 1;
+    const step = niceStep(maxV, narrow ? 4 : 5);
+    const yMax = Math.ceil(maxV / step) * step;
+    const months = state.anios * 12;
+    const x = mo => m.left + (mo / months) * iw;
+    const y = v => m.top + ih - (v / yMax) * ih;
+
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+      "aria-label": `Gráfico de líneas: el valor del portafolio llega a ${money(maxV)} frente a ${money(pts[pts.length - 1].aportado)} aportados en ${state.anios} años.` });
+    chartEl.insertBefore(svg, tip);
+
+    // Grilla y eje Y
+    for (let v = 0; v <= yMax + 1e-6; v += step) {
+      el("line", { x1: m.left, x2: m.left + iw, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--fg-3)" : "var(--grid)", "stroke-width": 1 }, svg);
+      const t = el("text", { x: m.left - 8, y: y(v) + 4, "text-anchor": "end" }, svg);
+      t.textContent = v === 0 ? "$0" : millions(v);
+    }
+    // Eje X por año
+    const perYear = iw / state.anios;
+    const yStep = [1, 2, 5, 10].find(s => s * perYear >= (narrow ? 34 : 56)) || 10;
+    for (let a = 0; a <= state.anios; a += yStep) {
+      const t = el("text", { x: x(a * 12), y: m.top + ih + 20, "text-anchor": a === 0 ? "start" : "middle" }, svg);
+      t.textContent = a === 0 ? "0" : (narrow ? "" : "Año ") + a;
+    }
+
+    const path = key => pts.map((p, i) => (i ? "L" : "M") + x(p.m).toFixed(1) + " " + y(p[key]).toFixed(1)).join(" ");
+    el("path", { d: path("valor") + ` L${x(months)} ${y(0)} L${x(0)} ${y(0)} Z`, fill: "var(--series-1-fill)", stroke: "none" }, svg);
+    el("path", { d: path("aportado"), fill: "none", stroke: "var(--series-2)", "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+    el("path", { d: path("valor"), fill: "none", stroke: "var(--series-1)", "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+
+    // Puntos finales + etiquetas directas
+    const last = pts[pts.length - 1];
+    el("circle", { cx: x(months), cy: y(last.valor), r: 4.5, fill: "var(--series-1)", stroke: "var(--bg)", "stroke-width": 2 }, svg);
+    el("circle", { cx: x(months), cy: y(last.aportado), r: 4.5, fill: "var(--series-2)", stroke: "var(--bg)", "stroke-width": 2 }, svg);
+    if (!narrow) {
+      let yv = y(last.valor), ya = y(last.aportado);
+      if (ya - yv < 34) { const mid = (ya + yv) / 2; yv = mid - 17; ya = mid + 17; }
+      const lab = (yy, title, val) => {
+        const t1 = el("text", { x: x(months) + 12, y: yy - 2, class: "lbl" }, svg); t1.textContent = title;
+        const t2 = el("text", { x: x(months) + 12, y: yy + 13 }, svg); t2.textContent = val;
+      };
+      lab(yv, "Portafolio", millions(last.valor));
+      lab(ya, "Aportado", millions(last.aportado));
+    }
+
+    // Capa de hover
+    const cross = el("line", { y1: m.top, y2: m.top + ih, stroke: "var(--fg-3)", "stroke-width": 1, "stroke-dasharray": "3 3", visibility: "hidden" }, svg);
+    const dotV = el("circle", { r: 4.5, fill: "var(--series-1)", stroke: "var(--bg)", "stroke-width": 2, visibility: "hidden" }, svg);
+    const dotA = el("circle", { r: 4.5, fill: "var(--series-2)", stroke: "var(--bg)", "stroke-width": 2, visibility: "hidden" }, svg);
+    const hit = el("rect", { x: m.left, y: 0, width: iw, height: H, fill: "transparent" }, svg);
+
+    function show(clientX) {
+      const box = svg.getBoundingClientRect();
+      const scale = W / box.width;
+      const px = (clientX - box.left) * scale;
+      const mo = Math.max(0, Math.min(months, Math.round(((px - m.left) / iw) * months)));
+      const p = pts[mo];
+      const cx = x(p.m);
+      cross.setAttribute("x1", cx); cross.setAttribute("x2", cx);
+      dotV.setAttribute("cx", cx); dotV.setAttribute("cy", y(p.valor));
+      dotA.setAttribute("cx", cx); dotA.setAttribute("cy", y(p.aportado));
+      [cross, dotV, dotA].forEach(n => n.setAttribute("visibility", "visible"));
+      const yrs = Math.floor(p.m / 12), mm = p.m % 12;
+      const when = p.m === 0 ? "Inicio" : (yrs ? `Año ${yrs}` : "") + (yrs && mm ? ", " : "") + (mm ? `mes ${mm}` : "");
+      tip.innerHTML =
+        `<div class="t">${when}${p.day ? ` <span style="color:var(--fg-3);font-weight:400">· día ${nf.format(p.day)}</span>` : ""}</div>` +
+        `<div class="row"><span><span class="swatch line" style="background:var(--series-1)"></span>Portafolio</span><span class="num">${money(p.valor)}</span></div>` +
+        `<div class="row"><span><span class="swatch line" style="background:var(--series-2)"></span>Aportado</span><span class="num">${money(p.aportado)}</span></div>` +
+        `<div class="row"><span>Intereses</span><span class="num">${money(p.valor - p.aportado)}</span></div>`;
+      tip.hidden = false;
+      const left = cx / scale, tw = tip.offsetWidth, cw = chartEl.clientWidth;
+      let tl = left + 14;
+      if (tl + tw > cw) tl = left - tw - 14;
+      tip.style.left = Math.max(0, Math.min(cw - tw, tl)) + "px";
+      tip.style.top = (m.top / scale + 4) + "px";
+    }
+    function hide() { [cross, dotV, dotA].forEach(n => n.setAttribute("visibility", "hidden")); tip.hidden = true; }
+    hit.addEventListener("pointermove", e => show(e.clientX));
+    hit.addEventListener("pointerdown", e => show(e.clientX));
+    hit.addEventListener("pointerleave", hide);
+  }
+
+  function render() {
+    const aporte = Math.max(0, Number($("aporte").value) || 0);
+    const tasa = Math.max(0, Math.min(100, Number($("tasa").value) || 0)) / 100;
+    const anios = Math.max(1, Math.min(40, Math.round(Number($("anios").value) || 1)));
+    state = simulate(aporte, tasa, anios);
+    const last = state.points[state.points.length - 1];
+    const interes = last.valor - last.aportado;
+    const pct = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
+
+    $("headline").textContent = `Invertir ${money(aporte)} por día al ${pct.format(tasa * 100)}% anual durante ${anios} ${anios === 1 ? "año" : "años"}`;
+    $("s-aportado").textContent = money(last.aportado);
+    $("s-aportado-sub").textContent = `${nf.format(anios * DAYS_PER_YEAR)} aportes de ${money(aporte)}`;
+    $("s-interes").textContent = money(interes);
+    $("s-interes-sub").textContent = last.aportado ? `${pct.format(interes / last.aportado * 100)}% sobre lo aportado` : "—";
+    $("s-final").textContent = money(last.valor);
+    $("s-final-sub").textContent = last.aportado ? `${pct.format(last.valor / last.aportado)} veces lo aportado` : "—";
+    $("note").textContent = `Supuestos: ${DAYS_PER_YEAR} aportes por año (todos los días), tasa efectiva anual del ${pct.format(tasa * 100)}% equivalente a ${(state.r * 100).toFixed(4).replace(".", ",")}% diario, aporte al cierre de cada día. Valores nominales, sin inflación, impuestos ni comisiones.`;
+
+    const rows = state.years.map((yr, i) => {
+      const prev = i ? state.years[i - 1].aportado : 0;
+      return `<tr><td>Año ${yr.y}</td><td>${money(yr.aportado - prev)}</td><td>${money(yr.aportado)}</td><td>${money(yr.valor - yr.aportado)}</td><td>${money(yr.valor)}</td></tr>`;
+    });
+    $("tbody").innerHTML = rows.join("");
+    draw();
+  }
+
+  $("params").addEventListener("input", render);
+  $("params").addEventListener("submit", e => e.preventDefault());
+  let raf = 0;
+  window.addEventListener("resize", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); });
+  render();
+})();
+</script>

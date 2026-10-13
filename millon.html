@@ -1,0 +1,233 @@
+<title>El millón de dólares</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Public+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: una sola pantalla de celular: respuesta grande, gráfico con la meta, tres controles. */
+:root {
+  --bg: #f4f6f4;
+  --surface: #ffffff;
+  --fg: #111412;
+  --fg-2: #4a514c;
+  --fg-3: #737a75;
+  --line: #dde2de;
+  --grid: #e9ece9;
+  --accent: #0d7a5f;
+  --accent-soft: #e0f0e9;
+  --series-1: #2a78d6;
+  --series-1-fill: rgba(42, 120, 214, 0.12);
+  --series-2: #eb6834;
+  --goal: #111412;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111513; --surface: #1a1f1c; --fg: #eef1ee; --fg-2: #bdc4bf; --fg-3: #8c948f;
+    --line: #2b322e; --grid: #232926; --accent: #43b892; --accent-soft: #1a332a;
+    --series-1: #3987e5; --series-1-fill: rgba(57, 135, 229, 0.18); --series-2: #d95926; --goal: #eef1ee;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111513; --surface: #1a1f1c; --fg: #eef1ee; --fg-2: #bdc4bf; --fg-3: #8c948f;
+  --line: #2b322e; --grid: #232926; --accent: #43b892; --accent-soft: #1a332a;
+  --series-1: #3987e5; --series-1-fill: rgba(57, 135, 229, 0.18); --series-2: #d95926; --goal: #eef1ee;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.45; }
+.wrap { max-width: 640px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.wrap > * { min-width: 0; }
+
+.answer { display: grid; gap: 4px; }
+.answer .k { font-size: 15px; color: var(--fg-2); font-weight: 600; }
+.answer .big { font-family: var(--font-display); font-weight: 900; font-size: clamp(40px, 12vw, 64px); line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.answer .pesos { font-size: 14px; color: var(--fg-3); }
+.verdict { font-family: var(--font-display); font-weight: 800; font-size: clamp(19px, 5vw, 24px); line-height: 1.2; background: var(--accent-soft); color: var(--fg); border-radius: 12px; padding: 12px 14px; margin: 0; text-wrap: balance; }
+.verdict b { color: var(--accent); }
+
+.chart { position: relative; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 8px 6px; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.chart text { font-family: var(--font-data); font-size: 11px; fill: var(--fg-3); }
+.chart .goal-lbl { font-family: var(--font-body); font-weight: 700; font-size: 12px; fill: var(--goal); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--fg-2); padding: 0 6px 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); display: grid; gap: 2px; min-width: 170px; z-index: 2; }
+[hidden] { display: none !important; }
+.tip b { font-weight: 700; }
+.tip .row { display: flex; justify-content: space-between; gap: 10px; }
+.tip .num { font-family: var(--font-data); }
+
+.controls { display: grid; gap: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.ctl { display: grid; gap: 4px; }
+.ctl .lab { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.ctl label { font-weight: 700; font-size: 16px; }
+.ctl output { font-family: var(--font-display); font-weight: 800; font-size: 22px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+input[type="range"] { width: 100%; height: 34px; margin: 0; accent-color: var(--accent); }
+input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--fg-3); }
+.fine { font-size: 12.5px; color: var(--fg-3); margin: 0; }
+</style>
+
+<div class="wrap">
+  <div class="answer">
+    <div class="k" id="k-label">En 12 años tenés</div>
+    <div class="big" id="big">—</div>
+    <div class="pesos" id="pesos"></div>
+  </div>
+
+  <p class="verdict" id="verdict"></p>
+
+  <div class="chart" id="chart">
+    <div class="legend" aria-hidden="true">
+      <span><span class="sw" style="background:var(--series-1)"></span>Lo que tenés</span>
+      <span><span class="sw" style="background:var(--series-2)"></span>Lo que pusiste</span>
+      <span><span class="sw" style="background:repeating-linear-gradient(90deg,var(--goal) 0 4px,transparent 4px 7px)"></span>Meta: 1 millón</span>
+    </div>
+    <div class="tip" id="tip" hidden></div>
+  </div>
+
+  <div class="controls">
+    <div class="ctl">
+      <div class="lab"><label for="perday">Ponés por día</label><output id="o-perday" for="perday"></output></div>
+      <input type="range" id="perday" min="50000" max="500000" step="10000" value="200000">
+      <div class="ends"><span>$50 mil</span><span>$500 mil</span></div>
+    </div>
+    <div class="ctl">
+      <div class="lab"><label for="years">Años</label><output id="o-years" for="years"></output></div>
+      <input type="range" id="years" min="1" max="20" step="1" value="12">
+      <div class="ends"><span>1</span><span>20</span></div>
+    </div>
+    <div class="ctl">
+      <div class="lab"><label for="rate">Rinde por año</label><output id="o-rate" for="rate"></output></div>
+      <input type="range" id="rate" min="0" max="12" step="1" value="10">
+      <div class="ends"><span>0% (bajo el colchón)</span><span>12%</span></div>
+    </div>
+  </div>
+
+  <p class="fine">Dólar a $1.540 (MEP, 13/10/2026). Ahorrando todos los días. Montos en pesos y dólares de hoy: el aporte diario sube con la inflación. El rendimiento es un promedio de largo plazo: la bolsa tiene años malos.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const DOLAR = 1540, META = 1e6, DPY = 365;
+  const nf = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+  const usd = v => "US$" + nf.format(Math.round(v));
+  const pesos = v => "$" + nf.format(Math.round(v));
+  const short = v => v >= 1e6 ? "US$" + new Intl.NumberFormat("es-AR", { maximumFractionDigits: 1 }).format(v / 1e6) + " M" : "US$" + nf.format(Math.round(v / 1000)) + " mil";
+  const $ = id => document.getElementById(id);
+  const inputs = ["perday", "years", "rate"].map($);
+  const chartEl = $("chart"), tip = $("tip");
+
+  // Saldo en dólares mes a mes, aportando todos los días.
+  function project(perDayPesos, rate, years) {
+    const r = Math.pow(1 + rate, 1 / DPY) - 1, perDay = perDayPesos / DOLAR;
+    const pts = [{ m: 0, puse: 0, tengo: 0 }];
+    let saldo = 0, next = 1, hit = null;
+    const total = Math.max(years, 30) * DPY;
+    for (let d = 1; d <= total; d++) {
+      saldo = saldo * (1 + r) + perDay;
+      if (hit === null && saldo >= META) hit = d / DPY;
+      if (d <= years * DPY) while (next <= years * 12 && d === Math.round(next * DPY / 12)) { pts.push({ m: next, puse: perDay * d, tengo: saldo }); next++; }
+    }
+    return { pts, hit };
+  }
+  const whenTxt = y => {
+    let yy = Math.floor(y), mm = Math.round((y - yy) * 12);
+    if (mm === 12) { yy++; mm = 0; }
+    return (yy ? yy + (yy === 1 ? " año" : " años") : "") + (yy && mm ? " y " : "") + (mm ? mm + (mm === 1 ? " mes" : " meses") : "");
+  };
+
+  let data = null;
+  function render() {
+    const perDay = Number(inputs[0].value), years = Number(inputs[1].value), rate = Number(inputs[2].value) / 100;
+    $("o-perday").textContent = pesos(perDay);
+    $("o-years").textContent = years;
+    $("o-rate").textContent = Math.round(rate * 100) + "%";
+    data = project(perDay, rate, years);
+    const last = data.pts[data.pts.length - 1];
+    $("k-label").textContent = `En ${years} ${years === 1 ? "año" : "años"} tenés`;
+    $("big").textContent = usd(last.tengo);
+    $("pesos").textContent = `${pesos(last.tengo * DOLAR)} · pusiste ${usd(last.puse)}, el resto lo ganó la inversión`;
+    const v = $("verdict");
+    if (last.tengo >= META) v.innerHTML = `Sí, es posible: <b>llegás al millón de dólares en ${whenTxt(data.hit)}</b>.`;
+    else if (data.hit !== null) v.innerHTML = `Todavía no. Seguí moviendo los años: <b>el millón llega en ${whenTxt(data.hit)}</b>.`;
+    else v.innerHTML = `Así no llegás al millón en 30 años. <b>Subí lo que ponés por día o el rendimiento.</b>`;
+    draw();
+  }
+
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (n, a, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+
+  function draw() {
+    tip.hidden = true;
+    const old = chartEl.querySelector("svg"); if (old) old.remove();
+    const W = Math.max(280, chartEl.clientWidth - 16), H = W < 480 ? 250 : 300;
+    const m = { top: 10, right: 12, bottom: 26, left: 58 };
+    const iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    const pts = data.pts, months = pts[pts.length - 1].m || 1;
+    const last = pts[pts.length - 1];
+    const top = Math.max(last.tengo, META) * 1.08;
+    const step = top <= 600000 ? 100000 : top <= 1300000 ? 250000 : top <= 2600000 ? 500000 : 1000000;
+    const yMax = Math.ceil(top / step) * step;
+    const x = mo => m.left + (mo / months) * iw, y = v => m.top + ih - (v / yMax) * ih;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `Gráfico en dólares: en ${months / 12} años tenés ${usd(last.tengo)}; la meta es un millón.` });
+    chartEl.insertBefore(svg, tip);
+
+    for (let v = 0; v <= yMax + 1; v += step) {
+      el("line", { x1: m.left, x2: m.left + iw, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--fg-3)" : "var(--grid)", "stroke-width": 1 }, svg);
+      el("text", { x: m.left - 6, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = v === 0 ? "0" : short(v);
+    }
+    const yrs = months / 12, yStep = yrs <= 8 ? 1 : yrs <= 14 ? 2 : 4;
+    for (let a = 0; a <= yrs; a += yStep) el("text", { x: x(a * 12), y: H - 6, "text-anchor": a === 0 ? "start" : "middle" }, svg).textContent = a === 0 ? "Hoy" : a;
+    el("text", { x: m.left + iw, y: H - 6, "text-anchor": "end", opacity: yrs % yStep ? 1 : 0 }, svg).textContent = yrs;
+
+    const path = k => pts.map((p, i) => (i ? "L" : "M") + x(p.m).toFixed(1) + " " + y(p[k]).toFixed(1)).join(" ");
+    el("path", { d: path("tengo") + ` L${x(months)} ${y(0)} L${x(0)} ${y(0)} Z`, fill: "var(--series-1-fill)" }, svg);
+    el("path", { d: path("puse"), fill: "none", stroke: "var(--series-2)", "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
+    el("path", { d: path("tengo"), fill: "none", stroke: "var(--series-1)", "stroke-width": 3, "stroke-linejoin": "round" }, svg);
+
+    // Meta del millón
+    el("line", { x1: m.left, x2: m.left + iw, y1: y(META), y2: y(META), stroke: "var(--goal)", "stroke-width": 1.5, "stroke-dasharray": "6 5" }, svg);
+    el("text", { x: m.left + 6, y: y(META) - 7, class: "goal-lbl" }, svg).textContent = "1 millón de dólares";
+    if (data.hit !== null && data.hit * 12 <= months) {
+      const hx = x(data.hit * 12);
+      el("line", { x1: hx, x2: hx, y1: y(META), y2: y(0), stroke: "var(--accent)", "stroke-width": 1.5, "stroke-dasharray": "2 3" }, svg);
+      el("circle", { cx: hx, cy: y(META), r: 7, fill: "var(--accent)", stroke: "var(--surface)", "stroke-width": 3 }, svg);
+    }
+    el("circle", { cx: x(months), cy: y(last.tengo), r: 5, fill: "var(--series-1)", stroke: "var(--surface)", "stroke-width": 2 }, svg);
+
+    const cross = el("line", { y1: m.top, y2: m.top + ih, stroke: "var(--fg-3)", "stroke-width": 1, "stroke-dasharray": "3 3", visibility: "hidden" }, svg);
+    const dot = el("circle", { r: 5, fill: "var(--series-1)", stroke: "var(--surface)", "stroke-width": 2, visibility: "hidden" }, svg);
+    const hitbox = el("rect", { x: m.left, y: 0, width: iw, height: H, fill: "transparent" }, svg);
+    const show = cx0 => {
+      const box = svg.getBoundingClientRect(), sc = W / box.width;
+      const mo = Math.max(0, Math.min(months, Math.round((((cx0 - box.left) * sc) - m.left) / iw * months)));
+      const p = pts[mo], cx = x(mo);
+      cross.setAttribute("x1", cx); cross.setAttribute("x2", cx); cross.setAttribute("visibility", "visible");
+      dot.setAttribute("cx", cx); dot.setAttribute("cy", y(p.tengo)); dot.setAttribute("visibility", "visible");
+      const a = Math.floor(mo / 12), mm = mo % 12;
+      tip.innerHTML = `<b>${mo === 0 ? "Hoy" : (a ? "Año " + a : "") + (a && mm ? ", " : "") + (mm ? "mes " + mm : "")}</b>
+        <div class="row"><span>Tenés</span><span class="num">${usd(p.tengo)}</span></div>
+        <div class="row"><span>Pusiste</span><span class="num">${usd(p.puse)}</span></div>`;
+      tip.hidden = false;
+      const left = cx / sc + 8, tw = tip.offsetWidth, cw = chartEl.clientWidth;
+      let tl = left + 12; if (tl + tw > cw) tl = left - tw - 12;
+      tip.style.left = Math.max(4, Math.min(cw - tw - 4, tl)) + "px";
+      tip.style.top = "40px";
+    };
+    hitbox.addEventListener("pointermove", e => show(e.clientX));
+    hitbox.addEventListener("pointerdown", e => show(e.clientX));
+    hitbox.addEventListener("pointerleave", () => { cross.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); tip.hidden = true; });
+  }
+
+  inputs.forEach(i => i.addEventListener("input", render));
+  let raf = 0;
+  window.addEventListener("resize", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); });
+  render();
+})();
+</script>

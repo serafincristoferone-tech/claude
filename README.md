@@ -1,5 +1,7 @@
 # Ahorro diario a 10 años
 
+> **Versión simple:** `millon.html` — una sola pantalla con tres controles (pesos por día, años, rendimiento) y el gráfico en dólares con la meta del millón.
+
 `inversion-diaria.html` grafica cómo crece una inversión de **$200.000 por día** con un rendimiento del **10% efectivo anual** durante **10 años** (capitalización diaria, aporte al cierre de cada día).
 
 | | Monto |

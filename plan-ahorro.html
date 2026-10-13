@@ -229,14 +229,8 @@ ol.steps p { margin: 0; color: var(--fg-2); font-size: 14.5px; }
 <div class="wrap">
   <header class="top">
     <div class="eyebrow">Plan de ahorro diario</div>
-    <h1>Un poco cada día, sin cortar la cadena</h1>
-    <p class="lede">Elegí qué días de la semana ahorrás. Esos días, a las 21:00, anotás cuánto pusiste. No importa si un día es poco: lo que hace crecer la plata es la constancia.</p>
-    <div class="days-pick" role="group" aria-label="Qué días ahorrás">
-      <span class="days-label">Ahorro</span>
-      <button type="button" class="preset" data-days="7">Todos los días</button>
-      <button type="button" class="preset" data-days="6">Lunes a sábado</button>
-      <button type="button" class="preset" data-days="5">Lunes a viernes</button>
-    </div>
+    <h1>Un poco cada día, todos los días</h1>
+    <p class="lede">Todos los días a las 21:00 ponés algo y lo anotás acá. No importa si un día es poco: lo que hace crecer la plata es no cortar la cadena.</p>
     <nav class="jump" aria-label="Secciones">
       <a href="#hoy">Mi registro</a>
       <a href="#simulador">Simulador</a>
@@ -285,7 +279,7 @@ ol.steps p { margin: 0; color: var(--fg-2); font-size: 14.5px; }
       <div class="cal-head" aria-hidden="true"><span>LU</span><span>MA</span><span>MI</span><span>JU</span><span>VI</span><span>SÁ</span><span>DO</span></div>
       <div class="cal-grid" id="cal-grid"></div>
       <div class="cal-legend" aria-hidden="true">
-        <i style="box-shadow:inset 0 0 0 1px var(--line)"></i><span>Día libre</span><span style="margin-left:8px">Sin ahorro</span><i style="background:var(--heat-0)"></i><i style="background:var(--heat-1)"></i><i style="background:var(--heat-2)"></i><i style="background:var(--heat-3)"></i><i style="background:var(--heat-4)"></i><span>$500.000 o más</span>
+        <span>Sin ahorro</span><i style="background:var(--heat-0)"></i><i style="background:var(--heat-1)"></i><i style="background:var(--heat-2)"></i><i style="background:var(--heat-3)"></i><i style="background:var(--heat-4)"></i><span>$500.000 o más</span>
       </div>
     </div>
 
@@ -428,7 +422,7 @@ ol.steps p { margin: 0; color: var(--fg-2); font-size: 14.5px; }
       <p class="sub">InvertirOnline es un broker: una cuenta para comprar fondos, bonos y acciones. La rutina que mejor funciona:</p>
     </div>
     <ol class="steps">
-      <li><div><h3>Los días que te toca, a las 21:00, transferí el ahorro</h3><p>Desde tu banco a tu cuenta de IOL. En la alarma del celular elegí solo esos días de la semana. Anotalo acá apenas lo mandás, así no se pierde la racha.</p></div></li>
+      <li><div><h3>Todos los días a las 21:00, transferí el ahorro</h3><p>Desde tu banco a tu cuenta de IOL. Aunque sea un día flojo, poné algo. Anotalo acá apenas lo mandás, así no se pierde la racha.</p></div></li>
       <li><div><h3>Dejalo en un fondo money market</h3><p>Es un fondo común de inversión (FCI) de liquidez: rinde todos los días y lo podés sacar cuando quieras. Sirve de “alcancía” para no comprar acciones de a montos chicos cada día, que se pagan en comisiones.</p></div></li>
       <li><div><h3>Una vez por mes, pasá lo juntado al largo plazo</h3><p>Por ejemplo, CEDEARs de un fondo que replica un índice amplio (como el S&amp;P 500) o un FCI de renta variable. Repartido entre muchas empresas, no apostado a una sola.</p></div></li>
       <li><div><h3>No vendas cuando baja</h3><p>La bolsa tiene años malos. El 10% del simulador es un promedio de muchos años, no lo que va a pasar cada año. Los que ganan son los que siguen comprando cuando todo baja.</p></div></li>
@@ -675,7 +669,7 @@ ol.steps p { margin: 0; color: var(--fg-2); font-size: 14.5px; }
     if (keys.length >= 3) {
       const r = Math.pow(1 + rate, 1 / DPY) - 1, n = years * DPY;
       const fv = total * Math.pow(1 + r, n) + (r > 0 ? avg * (Math.pow(1 + r, n) - 1) / r : avg * n);
-      p.innerHTML = `<p>Con tu ritmo real (${money(avg)} por día en promedio, contando días libres y días sin ahorro), en ${years} años tendrías</p>
+      p.innerHTML = `<p>Con tu ritmo real (${money(avg)} por día en promedio, contando los días sin ahorro), en ${years} años tendrías</p>
         <div class="big">${money(fv)}</div>
         <p>Con un rendimiento de ${pct(rate * 100)} anual por encima de la inflación. Cambiá el plazo y la tasa en el simulador.</p>`;
     } else {
@@ -707,6 +701,7 @@ ol.steps p { margin: 0; color: var(--fg-2); font-size: 14.5px; }
   // ---------- simulador ----------
   const simDefaults = { wd: 4, usd: 1540, need: 3000000, days: 7, normal: 200000, good: 3, goodAmt: 500000, bad: 5, badAmt: 50000, skip: 0, rate: 10, years: 10 };
   const sim = Object.assign({}, simDefaults, state.sim || {});
+  sim.days = 7; // se ahorra todos los días
   state.sim = sim;
 
   function bindRange(id, key, fmt) {
@@ -819,7 +814,7 @@ ol.steps p { margin: 0; color: var(--fg-2); font-size: 14.5px; }
     warn.hidden = !over;
     if (over) warn.textContent = `Los días buenos, flojos y sin ahorro suman más que los ${Math.round(sdm)} días por mes que ahorrás. Bajá alguno para que el cálculo tenga sentido.`;
     const daysTxt = { 7: "todos los días", 6: "de lunes a sábado", 5: "de lunes a viernes" }[sim.days];
-    $("sim-sub").textContent = `Ahorrás ${daysTxt}: unos ${Math.round(sdm)} días por mes. Hay días que se ahorra más y días que menos; el simulador usa el promedio de un mes típico.`;
+    $("sim-sub").textContent = `Ahorrás ${daysTxt}. Hay días que se ahorra más y días que menos; el simulador usa el promedio de un mes típico.`;
 
     const rate = sim.rate / 100;
     const perDay = avgDaily(sim.skip);
@@ -843,7 +838,7 @@ ol.steps p { margin: 0; color: var(--fg-2); font-size: 14.5px; }
     } else {
       const alt = project(avgDaily(Math.round(sdm / 7)), rate, sim.years);
       const lost = last.valor - alt[alt.length - 1].valor;
-      lesson.innerHTML = `<strong>Sin cortar ningún día</strong><p>Si salteás uno de cada siete días que te tocan, en ${sim.years} ${sim.years === 1 ? "año" : "años"} tendrías ${money(lost)} menos. Probá el control “Días que no ahorrás nada”.</p>`;
+      lesson.innerHTML = `<strong>Sin cortar ningún día</strong><p>Si salteás un día por semana, en ${sim.years} ${sim.years === 1 ? "año" : "años"} tendrías ${money(lost)} menos. Probá el control “Días que no ahorrás nada”.</p>`;
     }
 
     const series = [

@@ -15,6 +15,6 @@ Abrí el archivo en el navegador: el gráfico muestra el valor del portafolio fr
 `plan-ahorro.html` es una herramienta para usar todos los días desde el celular:
 
 - **Mi registro**: cada noche se anota cuánto se ahorró. Muestra la racha, el total, un calendario de las últimas 5 semanas y una proyección con el ritmo real.
-- **Simulador**: monto de un día normal (100–300 mil), días buenos (500 mil), días flojos (50 mil), días salteados, qué días de la semana se ahorra, rendimiento por encima de la inflación y plazo. Incluye el valor en dólares.
+- **Simulador**: monto de un día normal (100–300 mil), días buenos (500 mil), días flojos (50 mil), días salteados, rendimiento por encima de la inflación y plazo. Incluye el valor en dólares.
 - **¿Pueden vivir de esto?**: renta mensual según el porcentaje que se retira por año y cuántos años faltan para cubrir un gasto mensual o juntar un millón de dólares.
 - **Cómo hacerlo en IOL**: rutina sugerida (money market a diario, inversión de largo plazo una vez por mes).

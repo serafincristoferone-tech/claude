@@ -1,0 +1,963 @@
+<title>Ahorro de cada día</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una columna para el celular (máx. 720px): registro de hoy arriba, simulador al medio, guía de IOL al final. */
+:root {
+  --bg: #f4f6f4;
+  --surface: #ffffff;
+  --fg: #111412;
+  --fg-2: #4a514c;
+  --fg-3: #737a75;
+  --line: #dde2de;
+  --grid: #e9ece9;
+  --accent: #0d7a5f;
+  --accent-ink: #ffffff;
+  --accent-soft: #e0f0e9;
+  --warn-soft: #fdf0e2;
+  --warn-ink: #8a4b0f;
+  --series-1: #2a78d6;
+  --series-1-fill: rgba(42, 120, 214, 0.10);
+  --series-2: #eb6834;
+  --series-3: #8a908c;
+  --heat-0: #e8ece9;
+  --heat-1: #cfe9df;
+  --heat-2: #8fcfb5;
+  --heat-3: #3fa983;
+  --heat-4: #0d7a5f;
+  --heat-ink-lo: #111412;
+  --heat-ink-hi: #ffffff;
+  --shadow: 0 1px 2px rgba(17, 20, 18, 0.06), 0 4px 16px rgba(17, 20, 18, 0.06);
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111513; --surface: #1a1f1c; --fg: #eef1ee; --fg-2: #bdc4bf; --fg-3: #8c948f;
+    --line: #2b322e; --grid: #232926;
+    --accent: #43b892; --accent-ink: #06150f; --accent-soft: #1a332a;
+    --warn-soft: #3a2a18; --warn-ink: #f2c28c;
+    --series-1: #3987e5; --series-1-fill: rgba(57, 135, 229, 0.16); --series-2: #d95926; --series-3: #8c948f;
+    --heat-0: #222825; --heat-1: #1d3a30; --heat-2: #22654f; --heat-3: #2f9474; --heat-4: #5fd0a8;
+    --heat-ink-lo: #eef1ee; --heat-ink-hi: #06150f;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111513; --surface: #1a1f1c; --fg: #eef1ee; --fg-2: #bdc4bf; --fg-3: #8c948f;
+  --line: #2b322e; --grid: #232926;
+  --accent: #43b892; --accent-ink: #06150f; --accent-soft: #1a332a;
+  --warn-soft: #3a2a18; --warn-ink: #f2c28c;
+  --series-1: #3987e5; --series-1-fill: rgba(57, 135, 229, 0.16); --series-2: #d95926; --series-3: #8c948f;
+  --heat-0: #222825; --heat-1: #1d3a30; --heat-2: #22654f; --heat-3: #2f9474; --heat-4: #5fd0a8;
+  --heat-ink-lo: #eef1ee; --heat-ink-hi: #06150f;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 720px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 64px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.wrap > * { min-width: 0; }
+
+.top { display: grid; gap: 6px; padding-block: 4px 4px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 7vw, 40px); line-height: 1.05; margin: 0; letter-spacing: -0.015em; text-wrap: balance; }
+.lede { margin: 0; color: var(--fg-2); max-width: 60ch; }
+nav.jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+nav.jump a { text-decoration: none; color: var(--fg); font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+nav.jump a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; display: grid; gap: 16px; min-width: 0; }
+.card > * { min-width: 0; }
+h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+h3 { font-family: var(--font-display); font-weight: 700; font-size: 16px; margin: 0; }
+.sub { color: var(--fg-2); font-size: 14px; margin: 0; }
+.muted { color: var(--fg-3); font-size: 13px; margin: 0; }
+.section-head { display: grid; gap: 4px; }
+
+/* Registro */
+.today-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.today-date { font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.2; }
+.today-date small { display: block; font-family: var(--font-body); font-weight: 500; font-size: 13px; color: var(--fg-3); }
+.status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 999px; white-space: nowrap; }
+.status-pill.ok { background: var(--accent-soft); color: var(--accent); }
+.status-pill.pending { background: var(--warn-soft); color: var(--warn-ink); }
+.status-pill svg { width: 14px; height: 14px; }
+
+.chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.chip {
+  font: 600 16px/1 var(--font-data); font-variant-numeric: tabular-nums; color: var(--fg);
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 14px 6px; cursor: pointer;
+  display: grid; gap: 4px; justify-items: center; min-height: 58px;
+}
+.chip small { font: 500 11.5px/1 var(--font-body); color: var(--fg-3); }
+.chip:hover { border-color: var(--fg-3); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip[aria-pressed="true"] small { color: var(--accent-ink); opacity: 0.85; }
+.other { display: flex; gap: 8px; flex-wrap: wrap; align-items: stretch; }
+.other label { flex-basis: 100%; font-size: 13px; color: var(--fg-2); font-weight: 600; }
+.money-input { display: flex; align-items: center; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); padding-left: 12px; flex: 1 1 160px; min-width: 0; }
+.money-input span { font: 500 16px var(--font-data); color: var(--fg-3); }
+.money-input input { border: 0; background: transparent; color: var(--fg); font: 500 16px var(--font-data); padding: 12px 10px 12px 6px; width: 100%; min-width: 0; outline: none; font-variant-numeric: tabular-nums; }
+.money-input:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.btn { font: 700 15px/1 var(--font-body); border-radius: 10px; padding: 13px 18px; cursor: pointer; border: 1.5px solid transparent; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; color: var(--fg-2); border-color: var(--line); }
+.btn.link { background: none; border: 0; padding: 6px 0; color: var(--fg-2); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+.saved-msg { font-size: 14px; color: var(--accent); font-weight: 600; min-height: 1.5em; margin: 0; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-block: 1px solid var(--line); }
+.kpi { padding: 12px 10px 12px 0; display: grid; gap: 2px; min-width: 0; }
+.kpi + .kpi { padding-left: 12px; border-left: 1px solid var(--line); }
+.kpi .k { font-size: 12px; color: var(--fg-2); font-weight: 600; }
+.kpi .v { font-family: var(--font-display); font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; line-height: 1.15; }
+.kpi .v.small { font-size: 18px; }
+
+.cal { display: grid; gap: 8px; max-width: 440px; width: 100%; }
+.cal-head, .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.cal-head span { text-align: center; font-size: 11px; font-weight: 700; color: var(--fg-3); letter-spacing: 0.04em; }
+.day {
+  aspect-ratio: 1; max-width: 100%; border-radius: 8px; border: 0; background: var(--heat-0); color: var(--heat-ink-lo);
+  font: 500 12px var(--font-data); cursor: pointer; display: grid; place-items: center; padding: 0; position: relative;
+}
+.day:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; }
+.day[data-l="1"] { background: var(--heat-1); }
+.day[data-l="2"] { background: var(--heat-2); }
+.day[data-l="3"] { background: var(--heat-3); color: var(--heat-ink-hi); }
+.day[data-l="4"] { background: var(--heat-4); color: var(--heat-ink-hi); }
+.day.today { box-shadow: inset 0 0 0 2px var(--fg); }
+.day.selected { outline: 2px solid var(--accent); outline-offset: 2px; }
+.day.off:not([data-l="1"]):not([data-l="2"]):not([data-l="3"]):not([data-l="4"]) { background: transparent; box-shadow: inset 0 0 0 1px var(--line); color: var(--fg-3); }
+.day.off.today { box-shadow: inset 0 0 0 2px var(--fg); }
+.days-pick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.days-label { font-size: 13px; font-weight: 600; color: var(--fg-2); margin-right: 2px; }
+.day:disabled { background: transparent; color: var(--fg-3); opacity: 0.45; cursor: default; }
+.cal-legend { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-3); flex-wrap: wrap; }
+.cal-legend i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+
+.projection { background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; }
+.projection .big { font-family: var(--font-display); font-weight: 800; font-size: clamp(24px, 6vw, 32px); color: var(--fg); font-variant-numeric: tabular-nums; line-height: 1.1; overflow-wrap: anywhere; }
+.projection p { margin: 0; font-size: 14px; color: var(--fg-2); }
+
+.alarm { display: flex; gap: 14px; align-items: center; border: 1px dashed var(--line); border-radius: 12px; padding: 12px 14px; }
+.alarm .clock { font-family: var(--font-data); font-weight: 500; font-size: 26px; color: var(--accent); flex: none; }
+.alarm p { margin: 0; font-size: 14px; color: var(--fg-2); }
+
+details.backup summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--fg-2); }
+details.backup summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details.backup .inner { display: grid; gap: 10px; margin-top: 10px; }
+textarea { width: 100%; min-height: 90px; font: 13px/1.4 var(--font-data); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; resize: vertical; }
+.row-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Simulador */
+.sim-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
+.ctl { display: grid; gap: 6px; min-width: 0; }
+.ctl .lab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--fg-2); }
+.ctl output { font: 500 15px var(--font-data); color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ctl .hint { font-size: 12px; color: var(--fg-3); }
+.ctl.wide { grid-column: 1 / -1; }
+input[type="range"] { width: 100%; accent-color: var(--accent); height: 28px; margin: 0; }
+input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.amt-pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.amt-pair .money-input input { padding-block: 8px; font-size: 15px; }
+.presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.preset { font: 600 13px var(--font-body); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg-2); cursor: pointer; }
+.preset[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.preset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.warn { background: var(--warn-soft); color: var(--warn-ink); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; margin: 0; }
+
+.results { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--line); }
+.res { padding: 12px 10px 12px 0; display: grid; gap: 2px; min-width: 0; }
+.res + .res { padding-left: 12px; border-left: 1px solid var(--line); }
+.res .k { font-size: 12px; color: var(--fg-2); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.res .v { font-family: var(--font-display); font-weight: 700; font-size: clamp(17px, 4.2vw, 24px); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; line-height: 1.15; }
+.swatch { width: 14px; height: 2px; border-radius: 1px; flex: none; display: inline-block; }
+.swatch.dash { background: repeating-linear-gradient(90deg, var(--series-3) 0 4px, transparent 4px 7px) !important; }
+
+.lesson { border-left: 3px solid var(--series-2); padding: 4px 0 4px 12px; display: grid; gap: 2px; }
+.lesson strong { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.lesson p { margin: 0; font-size: 14px; color: var(--fg-2); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--fg-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.chart text { font-family: var(--font-data); font-size: 11px; fill: var(--fg-3); }
+.chart .lbl { font-family: var(--font-body); font-size: 12px; font-weight: 700; fill: var(--fg); }
+.tip {
+  position: absolute; pointer-events: none; background: var(--surface); color: var(--fg); z-index: 2;
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px;
+  box-shadow: var(--shadow); min-width: 200px; display: grid; gap: 4px;
+}
+.tip .t { font-weight: 700; margin-bottom: 2px; }
+.tip .row { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.tip .row > span:first-child { display: inline-flex; align-items: center; gap: 6px; color: var(--fg-2); }
+.tip .num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+/* Guía */
+ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 14px; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; }
+ol.steps li::before { content: counter(s); width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font: 700 14px/30px var(--font-display); text-align: center; }
+ol.steps h3 { margin-bottom: 2px; }
+ol.steps p { margin: 0; color: var(--fg-2); font-size: 14.5px; }
+.facts { display: grid; gap: 10px; }
+.fact { display: grid; gap: 2px; border-top: 1px solid var(--line); padding-top: 10px; }
+.fact p { margin: 0; font-size: 14px; color: var(--fg-2); }
+.disclaimer { font-size: 12.5px; color: var(--fg-3); margin: 0; }
+
+@media (max-width: 560px) {
+  .card { padding: 16px 14px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi:nth-child(3) { padding-left: 0; border-left: 0; }
+  .kpi:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .sim-grid { grid-template-columns: minmax(0, 1fr); }
+  .results { grid-template-columns: minmax(0, 1fr); }
+  .res, .res + .res { padding: 10px 0; border-left: 0; }
+  .res + .res { border-top: 1px solid var(--line); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chip, .day, .preset { transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Plan de ahorro diario</div>
+    <h1>Un poco cada día, sin cortar la cadena</h1>
+    <p class="lede">Elegí qué días de la semana ahorrás. Esos días, a las 21:00, anotás cuánto pusiste. No importa si un día es poco: lo que hace crecer la plata es la constancia.</p>
+    <div class="days-pick" role="group" aria-label="Qué días ahorrás">
+      <span class="days-label">Ahorro</span>
+      <button type="button" class="preset" data-days="7">Todos los días</button>
+      <button type="button" class="preset" data-days="6">Lunes a sábado</button>
+      <button type="button" class="preset" data-days="5">Lunes a viernes</button>
+    </div>
+    <nav class="jump" aria-label="Secciones">
+      <a href="#hoy">Mi registro</a>
+      <a href="#simulador">Simulador</a>
+      <a href="#vivir">¿Pueden vivir de esto?</a>
+      <a href="#iol">Cómo hacerlo en IOL</a>
+    </nav>
+  </header>
+
+  <!-- REGISTRO -->
+  <section class="card" id="hoy" aria-labelledby="hoy-title">
+    <div class="today-head">
+      <div class="today-date" id="hoy-title">
+        <small id="sel-label">Hoy</small>
+        <span id="sel-date">—</span>
+      </div>
+      <span class="status-pill pending" id="sel-status">Sin anotar</span>
+    </div>
+
+    <div>
+      <p class="sub" style="margin-bottom:10px">¿Cuánto ahorraste?</p>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <form class="other" id="other-form" autocomplete="off">
+      <label for="other-amt">Otro monto</label>
+      <div class="money-input"><span>$</span><input id="other-amt" type="text" inputmode="numeric" placeholder="Ej. 150.000"></div>
+      <button class="btn primary" type="submit">Anotar</button>
+    </form>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <p class="saved-msg" id="saved-msg" role="status" aria-live="polite"></p>
+      <button class="btn link" type="button" id="clear-day" hidden>Borrar este día</button>
+    </div>
+
+    <div class="kpis" aria-label="Tu constancia">
+      <div class="kpi"><div class="k">Racha actual</div><div class="v" id="k-streak">0 días</div></div>
+      <div class="kpi"><div class="k">Mejor racha</div><div class="v" id="k-best">0 días</div></div>
+      <div class="kpi"><div class="k">Total ahorrado</div><div class="v small" id="k-total">$0</div></div>
+      <div class="kpi"><div class="k">Promedio por día</div><div class="v small" id="k-avg">—</div></div>
+    </div>
+
+    <div class="cal">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap">
+        <h3>Últimas 5 semanas</h3>
+        <span class="muted">Tocá un día para anotarlo o corregirlo</span>
+      </div>
+      <div class="cal-head" aria-hidden="true"><span>LU</span><span>MA</span><span>MI</span><span>JU</span><span>VI</span><span>SÁ</span><span>DO</span></div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend" aria-hidden="true">
+        <i style="box-shadow:inset 0 0 0 1px var(--line)"></i><span>Día libre</span><span style="margin-left:8px">Sin ahorro</span><i style="background:var(--heat-0)"></i><i style="background:var(--heat-1)"></i><i style="background:var(--heat-2)"></i><i style="background:var(--heat-3)"></i><i style="background:var(--heat-4)"></i><span>$500.000 o más</span>
+      </div>
+    </div>
+
+    <div class="projection" id="projection"></div>
+
+    <div class="alarm">
+      <div class="clock" aria-hidden="true">21:00</div>
+      <p><strong>Alarma diaria.</strong> En el celular: app Reloj → Alarma → 21:00, repetir <span id="alarm-days">todos los días</span>, con el nombre “Ahorro del día”. Cuando suena: transferís a IOL y lo anotás acá.</p>
+    </div>
+
+    <p class="muted" id="storage-note">Tu registro se guarda en este teléfono.</p>
+
+    <details class="backup">
+      <summary>Copia de seguridad del registro</summary>
+      <div class="inner">
+        <p class="muted">Copiá tu registro y guardalo en un mensaje para vos mismo. Si cambiás de teléfono, pegalo acá y tocá Restaurar.</p>
+        <div class="row-btns">
+          <button class="btn ghost" type="button" id="copy-backup">Copiar mi registro</button>
+        </div>
+        <label for="backup-text" class="muted">Pegá acá un registro copiado</label>
+        <textarea id="backup-text" spellcheck="false"></textarea>
+        <div class="row-btns">
+          <button class="btn ghost" type="button" id="restore-backup">Restaurar</button>
+        </div>
+        <p class="saved-msg" id="backup-msg" role="status" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <!-- SIMULADOR -->
+  <section class="card" id="simulador" aria-labelledby="sim-title">
+    <div class="section-head">
+      <h2 id="sim-title">¿Cuánto podés juntar?</h2>
+      <p class="sub" id="sim-sub">Mové los controles. Hay días que se ahorra más y días que menos; el simulador usa el promedio de un mes típico.</p>
+    </div>
+
+    <div class="sim-grid">
+      <div class="ctl wide">
+        <div class="lab"><label for="s-normal">Un día normal</label><output id="o-normal" for="s-normal"></output></div>
+        <input type="range" id="s-normal" min="100000" max="300000" step="10000" value="200000">
+        <span class="hint">Entre $100.000 y $300.000</span>
+      </div>
+
+      <div class="ctl">
+        <div class="lab"><label for="s-good">Días buenos por mes</label><output id="o-good" for="s-good"></output></div>
+        <input type="range" id="s-good" min="0" max="10" step="1" value="3">
+        <div class="amt-pair">
+          <label class="hint" for="a-good">Ese día ahorrás</label>
+          <div class="money-input"><span>$</span><input id="a-good" type="text" inputmode="numeric" value="500.000"></div>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="lab"><label for="s-bad">Días flojos por mes</label><output id="o-bad" for="s-bad"></output></div>
+        <input type="range" id="s-bad" min="0" max="15" step="1" value="5">
+        <div class="amt-pair">
+          <label class="hint" for="a-bad">Ese día ahorrás</label>
+          <div class="money-input"><span>$</span><input id="a-bad" type="text" inputmode="numeric" value="50.000"></div>
+        </div>
+      </div>
+
+      <div class="ctl wide">
+        <div class="lab"><label for="s-skip">Días que no ahorrás nada, por mes</label><output id="o-skip" for="s-skip"></output></div>
+        <input type="range" id="s-skip" min="0" max="15" step="1" value="0">
+        <span class="hint" id="skip-hint">Días que te tocaba y no pusiste nada. Probá subirlo para ver cuánto cuesta cortar la cadena</span>
+      </div>
+
+      <div class="ctl">
+        <div class="lab"><label for="s-rate">Rendimiento por encima de la inflación</label><output id="o-rate" for="s-rate"></output></div>
+        <input type="range" id="s-rate" min="0" max="15" step="0.5" value="10">
+        <div class="presets" role="group" aria-label="Escenarios de rendimiento">
+          <button type="button" class="preset" data-rate="4">Prudente 4%</button>
+          <button type="button" class="preset" data-rate="7">Histórico 7%</button>
+          <button type="button" class="preset" data-rate="10">Optimista 10%</button>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="lab"><label for="s-years">Durante</label><output id="o-years" for="s-years"></output></div>
+        <input type="range" id="s-years" min="1" max="30" step="1" value="10">
+        <div class="amt-pair">
+          <label class="hint" for="a-usd">Dólar MEP (pesos por dólar)</label>
+          <div class="money-input"><span>$</span><input id="a-usd" type="text" inputmode="numeric" value="1.540"></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="warn" id="sim-warn" hidden></p>
+
+    <div class="results" aria-label="Resultado al final">
+      <div class="res"><div class="k"><span class="swatch" style="background:var(--series-2)"></span>Pusiste</div><div class="v" id="r-aport">—</div></div>
+      <div class="res"><div class="k">Ganaste de intereses</div><div class="v" id="r-int">—</div></div>
+      <div class="res"><div class="k"><span class="swatch" style="background:var(--series-1)"></span>Tenés al final</div><div class="v" id="r-final">—</div><div class="muted" id="r-final-usd"></div></div>
+    </div>
+    <p class="muted" id="r-avg"></p>
+
+    <div class="lesson" id="lesson"></div>
+
+    <div style="display:grid;gap:8px">
+      <div class="legend" id="legend"></div>
+      <div class="chart" id="chart"><div class="tip" id="tip" hidden></div></div>
+    </div>
+    <p class="muted">Montos en pesos de hoy. Para que sigan valiendo lo mismo, el aporte diario tiene que subir con la inflación (si hoy son $200.000, el año que viene serán más pesos).</p>
+  </section>
+
+  <!-- VIVIR DE LA RENTA -->
+  <section class="card" id="vivir" aria-labelledby="vivir-title">
+    <div class="section-head">
+      <h2 id="vivir-title">¿Pueden vivir de esto?</h2>
+      <p class="sub">Usa el plan de arriba. Elegí qué parte del capital sacan cada año para vivir.</p>
+    </div>
+    <div class="results">
+      <div class="res"><div class="k">Renta por mes al final</div><div class="v" id="v-renta">—</div><div class="muted" id="v-renta-usd"></div></div>
+      <div class="res"><div class="k">Para vivir con</div><div class="v" id="v-need-show">—</div><div class="muted">por mes, necesitan</div></div>
+      <div class="res"><div class="k">Capital necesario</div><div class="v" id="v-cap">—</div><div class="muted" id="v-cap-usd"></div></div>
+    </div>
+    <div class="ctl">
+      <div class="lab"><label for="s-wd">Retiro anual del capital</label><output id="o-wd" for="s-wd"></output></div>
+      <input type="range" id="s-wd" min="3" max="10" step="0.5" value="4">
+      <div class="presets" role="group" aria-label="Retiro anual">
+        <button type="button" class="preset" data-wd="4">Prudente 4%</button>
+        <button type="button" class="preset" data-wd="10">Todo el rendimiento 10%</button>
+      </div>
+      <span class="hint" id="wd-hint"></span>
+    </div>
+    <div class="ctl">
+      <div class="lab"><label for="a-need">¿Cuánto necesitan por mes para vivir?</label></div>
+      <div class="money-input"><span>$</span><input id="a-need" type="text" inputmode="numeric" value="3.000.000"></div>
+    </div>
+    <div class="lesson" id="v-lesson" style="border-left-color:var(--accent)"></div>
+    <div class="facts">
+      <div class="fact"><h3>¿Y el millón de dólares?</h3><p id="v-million"></p></div>
+    </div>
+  </section>
+
+  <!-- GUÍA IOL -->
+  <section class="card" id="iol" aria-labelledby="iol-title">
+    <div class="section-head">
+      <h2 id="iol-title">Cómo hacerlo en IOL</h2>
+      <p class="sub">InvertirOnline es un broker: una cuenta para comprar fondos, bonos y acciones. La rutina que mejor funciona:</p>
+    </div>
+    <ol class="steps">
+      <li><div><h3>Los días que te toca, a las 21:00, transferí el ahorro</h3><p>Desde tu banco a tu cuenta de IOL. En la alarma del celular elegí solo esos días de la semana. Anotalo acá apenas lo mandás, así no se pierde la racha.</p></div></li>
+      <li><div><h3>Dejalo en un fondo money market</h3><p>Es un fondo común de inversión (FCI) de liquidez: rinde todos los días y lo podés sacar cuando quieras. Sirve de “alcancía” para no comprar acciones de a montos chicos cada día, que se pagan en comisiones.</p></div></li>
+      <li><div><h3>Una vez por mes, pasá lo juntado al largo plazo</h3><p>Por ejemplo, CEDEARs de un fondo que replica un índice amplio (como el S&amp;P 500) o un FCI de renta variable. Repartido entre muchas empresas, no apostado a una sola.</p></div></li>
+      <li><div><h3>No vendas cuando baja</h3><p>La bolsa tiene años malos. El 10% del simulador es un promedio de muchos años, no lo que va a pasar cada año. Los que ganan son los que siguen comprando cuando todo baja.</p></div></li>
+    </ol>
+    <div class="facts">
+      <div class="fact"><h3>¿Por qué “por encima de la inflación”?</h3><p>En pesos, los rendimientos nominales parecen altos porque la inflación también lo es. Lo que importa es cuánto ganás después de descontarla. Por eso el simulador trabaja en pesos de hoy.</p></div>
+      <div class="fact"><h3>¿Cuánto rinde la bolsa de verdad?</h3><p>A muy largo plazo, las acciones de EE.UU. rindieron alrededor de 6% a 7% anual por encima de la inflación, con años de caídas fuertes en el medio. Un 10% sostenido es un escenario optimista.</p></div>
+    </div>
+    <p class="disclaimer">Esto es una guía general para armar el hábito, no asesoramiento financiero personalizado. Revisá en IOL las comisiones, los costos de cada fondo y tu perfil de inversor antes de invertir.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const DPY = 365, DPM = 365 / 12;
+  const LS_KEY = "ahorro-diario-v1";
+  const nf = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+  const money = v => "$" + nf.format(Math.round(v));
+  const millions = v => {
+    const m = v / 1e6;
+    return "$" + new Intl.NumberFormat("es-AR", { maximumFractionDigits: m < 10 ? 1 : 0 }).format(m) + " M";
+  };
+  const pct = v => new Intl.NumberFormat("es-AR", { maximumFractionDigits: 1 }).format(v) + "%";
+  const $ = id => document.getElementById(id);
+  const parseMoney = s => { const n = Number(String(s).replace(/[^\d]/g, "")); return Number.isFinite(n) ? n : 0; };
+
+  // ---------- fechas ----------
+  const pad = n => String(n).padStart(2, "0");
+  const keyOf = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  const fromKey = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+  const addDays = (d, n) => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; };
+  const daysBetween = (a, b) => Math.round((Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / 864e5);
+  const today = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+  const longDate = new Intl.DateTimeFormat("es-AR", { weekday: "long", day: "numeric", month: "long" });
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+  // ---------- estado ----------
+  const state = { entries: {}, selected: keyOf(today()), sim: null };
+  // Días de la semana en que toca ahorrar: 7 = todos, 6 = lunes a sábado, 5 = lunes a viernes.
+  const isSaveDay = d => { const w = (d.getDay() + 6) % 7; return w < (state.sim ? state.sim.days : 7); };
+  let remote = null;         // DocumentReference cuando hay cuenta
+  let mode = "local";
+
+  function readLocal() {
+    try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : {}; } catch (e) { return {}; }
+  }
+  function writeLocal() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify({ entries: state.entries, sim: state.sim })); } catch (e) {}
+  }
+  function cleanEntries(obj) {
+    const out = {};
+    if (obj && typeof obj === "object") {
+      for (const k in obj) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(k)) {
+          const v = Math.round(Number(obj[k]));
+          if (Number.isFinite(v) && v > 0 && v < 1e12) out[k] = v;
+        }
+      }
+    }
+    return out;
+  }
+  const saved = readLocal();
+  state.entries = cleanEntries(saved.entries);
+  state.sim = saved.sim && typeof saved.sim === "object" ? saved.sim : null;
+
+  let writeChain = Promise.resolve();
+  function pushRemote() {
+    if (!remote) return;
+    const body = { entries: Object.assign({}, state.entries), actualizado: new Date().toISOString() };
+    const ref = remote;
+    writeChain = writeChain.then(() => ref.set(body)).catch(e => {
+      const code = e && e.code;
+      if (code === "unavailable" || code === "resource_exhausted") return;
+      remote = null; setMode("local");
+    });
+  }
+  function persist() { writeLocal(); pushRemote(); }
+
+  function setMode(m) {
+    mode = m;
+    $("storage-note").textContent = m === "cuenta"
+      ? "Tu registro se guarda en tu cuenta de Claude: lo ves igual desde cualquier dispositivo."
+      : "Tu registro se guarda en este teléfono. Si borrás los datos del navegador se pierde: hacé una copia de seguridad de vez en cuando.";
+  }
+
+  // Si el visor ofrece base de datos y la persona tiene cuenta, el registro se guarda ahí (privado).
+  (async function connect() {
+    try {
+      const c = window.claude;
+      if (!c || typeof c.use !== "function") return;
+      const [db, user] = await Promise.all([c.use("db"), c.use("user")]);
+      if (!db || !user) return;
+      const id = await user.id();
+      if (!id) return;
+      const ref = db.doc("data/users/" + id + "/registro");
+      const snap = await ref.get();
+      const theirs = snap.exists ? cleanEntries((snap.data() || {}).entries) : {};
+      const merged = Object.assign({}, state.entries, theirs);
+      const needsWrite = Object.keys(merged).length !== Object.keys(theirs).length;
+      if (needsWrite) await ref.set({ entries: merged, actualizado: new Date().toISOString() });
+      remote = ref; setMode("cuenta");
+      state.entries = merged; writeLocal(); renderAll();
+      ref.onSnapshot(s => {
+        if (!s.exists || s.metadata.hasPendingWrites) return;
+        const next = cleanEntries((s.data() || {}).entries);
+        if (JSON.stringify(next) === JSON.stringify(state.entries)) return;
+        state.entries = next; writeLocal(); renderLog();
+      }, () => { remote = null; setMode("local"); });
+    } catch (e) {
+      remote = null; setMode("local");
+    }
+  })();
+
+  // ---------- registro ----------
+  const CHIP_AMOUNTS = [
+    { v: 50000, t: "día flojo" }, { v: 100000, t: "" }, { v: 150000, t: "" },
+    { v: 200000, t: "día normal" }, { v: 300000, t: "" }, { v: 500000, t: "día bueno" },
+  ];
+  const chipsEl = $("chips");
+  CHIP_AMOUNTS.forEach(c => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.dataset.v = c.v;
+    b.innerHTML = nf.format(c.v / 1000) + " mil" + (c.t ? `<small>${c.t}</small>` : "<small>&nbsp;</small>");
+    b.setAttribute("aria-label", money(c.v));
+    b.addEventListener("click", () => setAmount(state.selected, c.v));
+    chipsEl.appendChild(b);
+  });
+
+  let msgTimer = 0;
+  function flash(text) {
+    const el = $("saved-msg"); el.textContent = text;
+    clearTimeout(msgTimer); msgTimer = setTimeout(() => { el.textContent = ""; }, 4000);
+  }
+
+  function setAmount(k, v) {
+    if (v > 0) state.entries[k] = Math.round(v); else delete state.entries[k];
+    persist();
+    const isToday = k === keyOf(today());
+    if (v > 0) {
+      const s = streakNow();
+      flash(isToday ? `Anotado: ${money(v)}. Racha de ${s} ${s === 1 ? "día" : "días"}.` : `Anotado ${money(v)} para el ${longDate.format(fromKey(k))}.`);
+    } else flash("Día borrado.");
+    renderLog();
+  }
+
+  $("other-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const v = parseMoney($("other-amt").value);
+    if (v <= 0) { flash("Escribí un monto mayor a $0."); return; }
+    setAmount(state.selected, v);
+    $("other-amt").value = "";
+  });
+  $("other-amt").addEventListener("input", e => {
+    const n = parseMoney(e.target.value);
+    e.target.value = n ? nf.format(n) : "";
+  });
+  $("clear-day").addEventListener("click", () => setAmount(state.selected, 0));
+
+  // La racha cuenta los días que tocaba ahorrar; un día libre sin anotar no la corta.
+  function streakNow() {
+    const keys = Object.keys(state.entries);
+    if (!keys.length) return 0;
+    const first = fromKey(keys.sort()[0]);
+    let d = today(), n = 0;
+    if (!(state.entries[keyOf(d)] > 0)) d = addDays(d, -1); // hoy todavía se puede anotar
+    while (d >= first) {
+      const v = state.entries[keyOf(d)] > 0;
+      if (v) n++;
+      else if (isSaveDay(d)) break;
+      d = addDays(d, -1);
+    }
+    return n;
+  }
+  function bestStreak() {
+    const keys = Object.keys(state.entries).sort();
+    if (!keys.length) return 0;
+    let best = 0, run = 0;
+    const end = today();
+    for (let d = fromKey(keys[0]); d <= end; d = addDays(d, 1)) {
+      if (state.entries[keyOf(d)] > 0) { run++; best = Math.max(best, run); }
+      else if (isSaveDay(d) && keyOf(d) !== keyOf(end)) run = 0;
+    }
+    return best;
+  }
+  const level = v => !v ? 0 : v < 100000 ? 1 : v < 200000 ? 2 : v < 500000 ? 3 : 4;
+  const dayWord = n => n + (n === 1 ? " día" : " días");
+
+  function renderLog() {
+    const t = today(), tk = keyOf(t);
+    if (state.selected > tk) state.selected = tk;
+    const sel = fromKey(state.selected), selV = state.entries[state.selected] || 0;
+    const diff = daysBetween(sel, t);
+    $("sel-label").textContent = diff === 0 ? "Hoy" : diff === 1 ? "Ayer" : "Hace " + diff + " días";
+    $("sel-date").textContent = cap(longDate.format(sel));
+    const st = $("sel-status");
+    if (selV > 0) {
+      st.className = "status-pill ok";
+      st.innerHTML = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' + money(selV);
+    } else {
+      st.className = "status-pill pending";
+      st.textContent = !isSaveDay(sel) ? "Día libre" : diff === 0 ? "Falta anotar hoy" : "Sin ahorro";
+    }
+    chipsEl.querySelectorAll(".chip").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.v) === selV)));
+    $("clear-day").hidden = !(selV > 0);
+
+    // KPIs
+    const keys = Object.keys(state.entries).sort();
+    const total = keys.reduce((s, k) => s + state.entries[k], 0);
+    const s = streakNow();
+    $("k-streak").textContent = dayWord(s);
+    $("k-best").textContent = dayWord(bestStreak());
+    $("k-total").textContent = money(total);
+    let avg = 0, span = 0;
+    if (keys.length) {
+      const first = fromKey(keys[0]);
+      const end = state.entries[tk] > 0 ? t : addDays(t, -1);
+      span = Math.max(1, daysBetween(first, end) + 1);
+      avg = total / span;
+    }
+    $("k-avg").textContent = keys.length ? money(avg) : "—";
+
+    // Calendario: 5 semanas terminando el domingo de esta semana
+    const grid = $("cal-grid"); grid.innerHTML = "";
+    const dow = (t.getDay() + 6) % 7; // lunes = 0
+    const start = addDays(t, -dow - 28);
+    for (let i = 0; i < 35; i++) {
+      const d = addDays(start, i), k = keyOf(d), v = state.entries[k] || 0;
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "day"; b.textContent = d.getDate();
+      b.dataset.l = level(v);
+      if (k === tk) b.classList.add("today");
+      if (!isSaveDay(d)) b.classList.add("off");
+      if (k === state.selected) b.classList.add("selected");
+      if (k > tk) b.disabled = true;
+      b.setAttribute("aria-label", cap(longDate.format(d)) + (v ? ": " + money(v) : isSaveDay(d) ? ": sin ahorro" : ": día libre"));
+      b.addEventListener("click", () => { state.selected = k; renderLog(); $("hoy").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); });
+      grid.appendChild(b);
+    }
+
+    // Proyección con lo que realmente viene haciendo
+    const p = $("projection");
+    const years = state.sim ? state.sim.years : 10, rate = (state.sim ? state.sim.rate : 10) / 100;
+    if (keys.length >= 3) {
+      const r = Math.pow(1 + rate, 1 / DPY) - 1, n = years * DPY;
+      const fv = total * Math.pow(1 + r, n) + (r > 0 ? avg * (Math.pow(1 + r, n) - 1) / r : avg * n);
+      p.innerHTML = `<p>Con tu ritmo real (${money(avg)} por día en promedio, contando días libres y días sin ahorro), en ${years} años tendrías</p>
+        <div class="big">${money(fv)}</div>
+        <p>Con un rendimiento de ${pct(rate * 100)} anual por encima de la inflación. Cambiá el plazo y la tasa en el simulador.</p>`;
+    } else {
+      const left = 3 - keys.length;
+      p.innerHTML = `<p><strong>Tu proyección aparece acá.</strong> Anotá ${left === 3 ? "tus primeros 3 días" : "" + left + (left === 1 ? " día más" : " días más")} y vas a ver cuánto juntarías siguiendo tu ritmo real.</p>`;
+    }
+  }
+
+  // Copia de seguridad
+  $("copy-backup").addEventListener("click", () => {
+    const text = JSON.stringify({ registro: state.entries });
+    const ta = $("backup-text");
+    const fallback = () => { ta.value = text; ta.focus(); ta.select(); $("backup-msg").textContent = "Seleccioné el texto: copialo con Copiar."; };
+    try {
+      navigator.clipboard.writeText(text).then(() => { $("backup-msg").textContent = "Copiado. Pegalo en un mensaje para vos mismo."; }, fallback);
+    } catch (e) { fallback(); }
+  });
+  $("restore-backup").addEventListener("click", () => {
+    let data;
+    try { data = JSON.parse($("backup-text").value); } catch (e) { $("backup-msg").textContent = "Ese texto no es un registro válido. Copialo completo, con las llaves { }."; return; }
+    const incoming = cleanEntries(data && (data.registro || data.entries || data));
+    const n = Object.keys(incoming).length;
+    if (!n) { $("backup-msg").textContent = "No encontré días anotados en ese texto."; return; }
+    Object.assign(state.entries, incoming);
+    persist(); renderLog();
+    $("backup-msg").textContent = `Listo: se recuperaron ${n} ${n === 1 ? "día" : "días"}.`;
+  });
+
+  // ---------- simulador ----------
+  const simDefaults = { wd: 4, usd: 1540, need: 3000000, days: 7, normal: 200000, good: 3, goodAmt: 500000, bad: 5, badAmt: 50000, skip: 0, rate: 10, years: 10 };
+  const sim = Object.assign({}, simDefaults, state.sim || {});
+  state.sim = sim;
+
+  function bindRange(id, key, fmt) {
+    const el = $(id), out = $("o-" + id.slice(2));
+    el.value = sim[key];
+    const show = () => { out.textContent = fmt(Number(el.value)); };
+    show();
+    el.addEventListener("input", () => { sim[key] = Number(el.value); show(); onSimChange(); });
+  }
+  bindRange("s-normal", "normal", v => money(v));
+  bindRange("s-good", "good", v => dayWord(v));
+  bindRange("s-bad", "bad", v => dayWord(v));
+  bindRange("s-skip", "skip", v => v === 0 ? "Ninguno" : dayWord(v));
+  bindRange("s-rate", "rate", v => pct(v) + " anual");
+  bindRange("s-years", "years", v => v + (v === 1 ? " año" : " años"));
+  bindRange("s-wd", "wd", v => pct(v) + " por año");
+  document.querySelectorAll("[data-wd]").forEach(b => b.addEventListener("click", () => {
+    sim.wd = Number(b.dataset.wd); $("s-wd").value = sim.wd; $("o-wd").textContent = pct(sim.wd) + " por año"; onSimChange();
+  }));
+  [["a-good", "goodAmt"], ["a-bad", "badAmt"], ["a-usd", "usd"], ["a-need", "need"]].forEach(([id, key]) => {
+    const el = $(id); el.value = nf.format(sim[key]);
+    el.addEventListener("input", () => {
+      const n = parseMoney(el.value); el.value = n ? nf.format(n) : "";
+      sim[key] = n; onSimChange();
+    });
+  });
+  function renderDays() {
+    document.querySelectorAll("[data-days]").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.days) === sim.days)));
+    $("alarm-days").textContent = { 7: "todos los días", 6: "de lunes a sábado", 5: "de lunes a viernes" }[sim.days];
+  }
+  document.querySelectorAll("[data-days]").forEach(b => b.addEventListener("click", () => {
+    sim.days = Number(b.dataset.days); renderDays(); onSimChange();
+  }));
+  renderDays();
+  document.querySelectorAll("[data-rate]").forEach(b => b.addEventListener("click", () => {
+    sim.rate = Number(b.dataset.rate); $("s-rate").value = sim.rate; $("o-rate").textContent = pct(sim.rate) + " anual"; onSimChange();
+  }));
+
+  let saveTimer = 0;
+  function onSimChange() {
+    renderSim(); renderLog();
+    clearTimeout(saveTimer); saveTimer = setTimeout(writeLocal, 400);
+  }
+
+  const saveDaysPerMonth = () => DPM * sim.days / 7;
+  function avgDaily(skip) {
+    const normalDays = Math.max(0, saveDaysPerMonth() - sim.good - sim.bad - skip);
+    return (sim.normal * normalDays + sim.goodAmt * sim.good + sim.badAmt * sim.bad) / DPM;
+  }
+  function project(perDay, rate, years) {
+    const r = Math.pow(1 + rate, 1 / DPY) - 1;
+    const months = years * 12, pts = [{ m: 0, aport: 0, valor: 0 }];
+    let saldo = 0, next = 1;
+    for (let d = 1; d <= years * DPY; d++) {
+      saldo = saldo * (1 + r) + perDay;
+      while (next <= months && d === Math.round(next * DPY / 12)) { pts.push({ m: next, aport: perDay * d, valor: saldo }); next++; }
+    }
+    return pts;
+  }
+
+  // Días hasta que el saldo llega a la meta (máximo 60 años).
+  function yearsTo(target, perDay, rate) {
+    if (target <= 0) return 0;
+    if (perDay <= 0) return null;
+    const r = Math.pow(1 + rate, 1 / DPY) - 1;
+    let saldo = 0;
+    for (let d = 1; d <= 60 * DPY; d++) { saldo = saldo * (1 + r) + perDay; if (saldo >= target) return d / DPY; }
+    return null;
+  }
+  const yearsTxt = y => {
+    if (y === null) return "más de 60 años";
+    const whole = Math.floor(y), months = Math.round((y - whole) * 12);
+    const yy = months === 12 ? whole + 1 : whole, mm = months === 12 ? 0 : months;
+    return (yy ? yy + (yy === 1 ? " año" : " años") : "") + (yy && mm ? " y " : "") + (mm ? mm + (mm === 1 ? " mes" : " meses") : "") || "menos de un mes";
+  };
+  function renderLiving(perDay, rate, finalValue, toUsd) {
+    const W = sim.wd / 100;
+    document.querySelectorAll("[data-wd]").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.wd) === sim.wd)));
+    $("wd-hint").textContent = sim.wd > 5
+      ? `Sacar ${pct(sim.wd)} por año da más plata por mes, pero es arriesgado. Si sacás todo lo que rinde, el capital no crece y la inflación lo achica año a año. Además, en un año malo tenés que vender en baja. Por eso la regla prudente es 4%: el resto queda para cubrir la inflación y los años malos.`
+      : `Con ${pct(sim.wd)} por año, lo más probable es que el capital dure toda la vida y mantenga su valor frente a la inflación.`;
+    const renta = finalValue * W / 12;
+    $("v-renta").textContent = money(renta);
+    $("v-renta-usd").textContent = sim.usd ? "≈ " + toUsd(renta) + " por mes" : "";
+    const need = sim.need;
+    const capital = need * 12 / W;
+    $("v-need-show").textContent = money(need);
+    $("v-cap").textContent = money(capital);
+    $("v-cap-usd").textContent = sim.usd ? "≈ " + toUsd(capital) : "";
+    const yrs = yearsTo(capital, perDay, rate);
+    const L = $("v-lesson");
+    if (need <= 0) L.innerHTML = "<strong>Escribí cuánto necesitan por mes</strong><p>Y te digo en cuántos años llegan con este plan.</p>";
+    else if (renta >= need) L.innerHTML = `<strong>Sí: en ${sim.years} ${sim.years === 1 ? "año" : "años"} la inversión cubre ${money(need)} por mes</strong><p>Llegan al capital necesario en ${yearsTxt(yrs)}. Desde ahí, la renta paga los gastos sin tocar el capital.</p>`;
+    else L.innerHTML = `<strong>Con este plan llegan en ${yearsTxt(yrs)}</strong><p>En ${sim.years} ${sim.years === 1 ? "año" : "años"} la renta sería ${money(renta)} por mes: cubre el ${pct(renta / need * 100)} de lo que necesitan. Para llegar antes: ahorrar más los días buenos, no saltear días, o necesitar menos por mes.</p>`;
+    const M = $("v-million");
+    if (sim.usd > 0) {
+      const target = 1e6 * sim.usd;
+      const y1 = perDay * DPY;
+      const needPerDay = target / DPY;
+      M.textContent = `Un millón de dólares hoy son ${money(target)}. Invertido, sacando ${pct(sim.wd)} por año, deja unos US$${nf.format(Math.round(1e6 * W / 12))} por mes. En un año, este plan junta ${money(y1)} (≈ ${toUsd(y1)}): lejos del millón. Para juntarlo en un año habría que poner ${money(needPerDay)} por día. Con este plan, el millón llega en ${yearsTxt(yearsTo(target, perDay, rate))}, siempre que el rendimiento se dé y el dólar acompañe a la inflación.`;
+    } else M.textContent = "Escribí la cotización del dólar en el simulador para calcularlo.";
+  }
+
+  let chartData = null;
+  function renderSim() {
+    document.querySelectorAll("[data-rate]").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.rate) === sim.rate)));
+    const sdm = saveDaysPerMonth();
+    const over = sim.good + sim.bad + sim.skip > Math.floor(sdm);
+    const warn = $("sim-warn");
+    warn.hidden = !over;
+    if (over) warn.textContent = `Los días buenos, flojos y sin ahorro suman más que los ${Math.round(sdm)} días por mes que ahorrás. Bajá alguno para que el cálculo tenga sentido.`;
+    const daysTxt = { 7: "todos los días", 6: "de lunes a sábado", 5: "de lunes a viernes" }[sim.days];
+    $("sim-sub").textContent = `Ahorrás ${daysTxt}: unos ${Math.round(sdm)} días por mes. Hay días que se ahorra más y días que menos; el simulador usa el promedio de un mes típico.`;
+
+    const rate = sim.rate / 100;
+    const perDay = avgDaily(sim.skip);
+    const plan = project(perDay, rate, sim.years);
+    const last = plan[plan.length - 1];
+    $("r-aport").textContent = money(last.aport);
+    $("r-int").textContent = money(last.valor - last.aport);
+    $("r-final").textContent = money(last.valor);
+    const usd = sim.usd > 0 ? sim.usd : 0;
+    const toUsd = v => usd ? "US$" + nf.format(Math.round(v / usd)) : "";
+    $("r-final-usd").textContent = usd ? "≈ " + toUsd(last.valor) + " al dólar de hoy" : "";
+    renderLiving(perDay, rate, last.valor, toUsd);
+    $("r-avg").textContent = `En promedio: ${money(perDay)} por día, unos ${money(perDay * DPM)} por mes.`;
+
+    const lesson = $("lesson");
+    let ideal = null;
+    if (sim.skip > 0) {
+      ideal = project(avgDaily(0), rate, sim.years);
+      const lost = ideal[ideal.length - 1].valor - last.valor;
+      lesson.innerHTML = `<strong>Saltear ${dayWord(sim.skip)} por mes te cuesta ${money(lost)}</strong><p>Es lo que tendrías de más en ${sim.years} ${sim.years === 1 ? "año" : "años"} si no cortaras ningún día. La línea punteada lo muestra.</p>`;
+    } else {
+      const alt = project(avgDaily(Math.round(sdm / 7)), rate, sim.years);
+      const lost = last.valor - alt[alt.length - 1].valor;
+      lesson.innerHTML = `<strong>Sin cortar ningún día</strong><p>Si salteás uno de cada siete días que te tocan, en ${sim.years} ${sim.years === 1 ? "año" : "años"} tendrías ${money(lost)} menos. Probá el control “Días que no ahorrás nada”.</p>`;
+    }
+
+    const series = [
+      { key: "valor", label: "Tenés", color: "var(--series-1)", pts: plan, fill: true },
+      { key: "aport", label: "Pusiste", color: "var(--series-2)", pts: plan },
+    ];
+    if (ideal) series.push({ key: "valor", label: "Sin saltear días", color: "var(--series-3)", pts: ideal, dash: true });
+    $("legend").innerHTML = series.map(s => `<span><span class="swatch${s.dash ? " dash" : ""}" style="background:${s.color}"></span>${s.label === "Tenés" ? "Lo que tenés" : s.label === "Pusiste" ? "Lo que pusiste" : s.label}</span>`).join("");
+    chartData = { series, years: sim.years };
+    drawChart();
+  }
+
+  // ---------- gráfico ----------
+  const chartEl = $("chart"), tip = $("tip");
+  const SVGNS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, parent) {
+    const e = document.createElementNS(SVGNS, name);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function niceStep(max, target) {
+    const raw = max / target, pow = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / pow;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * pow;
+  }
+
+  function drawChart() {
+    if (!chartData) return;
+    tip.hidden = true;
+    const old = chartEl.querySelector("svg"); if (old) old.remove();
+    const W = Math.max(300, chartEl.clientWidth || 640);
+    const narrow = W < 520;
+    const H = narrow ? 260 : 320;
+    const m = { top: 12, right: narrow ? 10 : 104, bottom: 28, left: narrow ? 52 : 64 };
+    const iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    const { series, years } = chartData;
+    const months = years * 12;
+    const maxV = Math.max(1, ...series.map(s => Math.max(s.pts[s.pts.length - 1][s.key], 0)));
+    const step = niceStep(maxV, narrow ? 4 : 5);
+    const yMax = Math.ceil(maxV / step) * step;
+    const x = mo => m.left + (mo / months) * iw;
+    const y = v => m.top + ih - (v / yMax) * ih;
+
+    const main = series[0].pts[series[0].pts.length - 1];
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+      "aria-label": `Gráfico: en ${years} años ponés ${money(main.aport)} y terminás con ${money(main.valor)}.` });
+    chartEl.insertBefore(svg, tip);
+
+    for (let v = 0; v <= yMax + 1e-6; v += step) {
+      el("line", { x1: m.left, x2: m.left + iw, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--fg-3)" : "var(--grid)", "stroke-width": 1 }, svg);
+      el("text", { x: m.left - 8, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = v === 0 ? "$0" : millions(v);
+    }
+    const perYear = iw / years;
+    const yStep = [1, 2, 5, 10].find(s => s * perYear >= (narrow ? 30 : 48)) || 10;
+    for (let a = 0; a <= years; a += yStep) {
+      el("text", { x: x(a * 12), y: m.top + ih + 19, "text-anchor": a === 0 ? "start" : "middle" }, svg).textContent = a === 0 ? "Hoy" : (narrow ? "" : "Año ") + a;
+    }
+
+    const pathOf = s => s.pts.map((p, i) => (i ? "L" : "M") + x(p.m).toFixed(1) + " " + y(p[s.key]).toFixed(1)).join(" ");
+    series.forEach(s => {
+      if (s.fill) el("path", { d: pathOf(s) + ` L${x(months)} ${y(0)} L${x(0)} ${y(0)} Z`, fill: "var(--series-1-fill)", stroke: "none" }, svg);
+    });
+    // dibujo en orden: comparación (punteada) primero, luego aportado, luego valor
+    [...series].reverse().forEach(s => {
+      el("path", { d: pathOf(s), fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-dasharray": s.dash ? "5 4" : "none" }, svg);
+    });
+    // puntos finales y etiquetas directas
+    const ends = series.map(s => ({ s, v: s.pts[s.pts.length - 1][s.key] }));
+    ends.forEach(e => el("circle", { cx: x(months), cy: y(e.v), r: 4.5, fill: e.s.color, stroke: "var(--surface)", "stroke-width": 2 }, svg));
+    if (!narrow) {
+      const labels = ends.map(e => ({ y: y(e.v), title: e.s.label, val: millions(e.v) })).sort((a, b) => a.y - b.y);
+      for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 32) labels[i].y = labels[i - 1].y + 32;
+      labels.forEach(l => {
+        el("text", { x: x(months) + 12, y: l.y - 1, class: "lbl" }, svg).textContent = l.title;
+        el("text", { x: x(months) + 12, y: l.y + 13 }, svg).textContent = l.val;
+      });
+    }
+
+    // hover / toque
+    const cross = el("line", { y1: m.top, y2: m.top + ih, stroke: "var(--fg-3)", "stroke-width": 1, "stroke-dasharray": "3 3", visibility: "hidden" }, svg);
+    const dots = series.map(s => el("circle", { r: 4.5, fill: s.color, stroke: "var(--surface)", "stroke-width": 2, visibility: "hidden" }, svg));
+    const hit = el("rect", { x: m.left, y: 0, width: iw, height: H, fill: "transparent" }, svg);
+    function show(clientX) {
+      const box = svg.getBoundingClientRect(), scale = W / box.width;
+      const px = (clientX - box.left) * scale;
+      const mo = Math.max(0, Math.min(months, Math.round(((px - m.left) / iw) * months)));
+      const cx = x(mo);
+      cross.setAttribute("x1", cx); cross.setAttribute("x2", cx); cross.setAttribute("visibility", "visible");
+      series.forEach((s, i) => { dots[i].setAttribute("cx", cx); dots[i].setAttribute("cy", y(s.pts[mo][s.key])); dots[i].setAttribute("visibility", "visible"); });
+      const yrs = Math.floor(mo / 12), mm = mo % 12;
+      const when = mo === 0 ? "Hoy" : (yrs ? `Año ${yrs}` : "") + (yrs && mm ? ", " : "") + (mm ? `mes ${mm}` : "");
+      const p = series[0].pts[mo];
+      tip.innerHTML = `<div class="t">${when}</div>` +
+        series.map(s => `<div class="row"><span><span class="swatch${s.dash ? " dash" : ""}" style="background:${s.color}"></span>${s.label}</span><span class="num">${money(s.pts[mo][s.key])}</span></div>`).join("") +
+        `<div class="row"><span>Intereses</span><span class="num">${money(p.valor - p.aport)}</span></div>`;
+      tip.hidden = false;
+      const left = cx / scale, tw = tip.offsetWidth, cw = chartEl.clientWidth;
+      let tl = left + 14; if (tl + tw > cw) tl = left - tw - 14;
+      tip.style.left = Math.max(0, Math.min(cw - tw, tl)) + "px";
+      tip.style.top = (m.top / scale + 2) + "px";
+    }
+    function hide() { cross.setAttribute("visibility", "hidden"); dots.forEach(d => d.setAttribute("visibility", "hidden")); tip.hidden = true; }
+    hit.addEventListener("pointermove", e => show(e.clientX));
+    hit.addEventListener("pointerdown", e => show(e.clientX));
+    hit.addEventListener("pointerleave", hide);
+  }
+
+  function renderAll() { renderSim(); renderLog(); }
+  let raf = 0;
+  window.addEventListener("resize", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(drawChart); });
+  // Si la página queda abierta, al pasar la medianoche "hoy" cambia.
+  let lastDay = keyOf(today());
+  setInterval(() => { const k = keyOf(today()); if (k !== lastDay) { if (state.selected === lastDay) state.selected = k; lastDay = k; renderLog(); } }, 60000);
+  setMode("local");
+  renderAll();
+})();
+</script>
